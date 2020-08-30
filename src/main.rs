@@ -25,23 +25,52 @@ const DOTFILES: [(&str, &str); 3] = [
      "~/.bashrc"),
 ];
 
+struct DotfileCompare {
+    base_path: String,
+    backup_path: String,
+ }
 
-fn read_path_to_string(input: String) -> String{
-    let init = shellexpand::tilde(&input);
-    let path = Path::new(init.as_ref());
-    fs::read_to_string(path).unwrap()
-}
+impl DotfileCompare {
+    pub fn new(p1: String, p2: String) -> Self {
+        DotfileCompare{
+            base_path: p1,
+            backup_path: p2,
+        }
+    }
+
+    pub fn print(&self){
+        println!("Base: {}", self.base_path);
+        println!("Backup: {}", self.backup_path);
+    }
 
 
-fn create_changeset(f1: String, f2: String) -> Changeset {
-    Changeset::new(
-        &read_path_to_string(f1), 
-        &read_path_to_string(f2), 
-        "\n"
-    )
+    pub fn config_string(&self, input: &String) -> String{
+        let init = shellexpand::tilde(&input);
+        let path = Path::new(init.as_ref());
+        fs::read_to_string(path).unwrap()
+    }
+
+
+    pub fn compare_files(&self) -> bool {
+        let base_config = self.config_string(&self.base_path);
+        let backup_config = self.config_string(&self.backup_path);
+        let change = Changeset::new(&base_config, &backup_config, "\n");
+
+        if change.diffs.len() > 1 {
+            println!("The files are not the same");
+            return false
+        }
+        true
+    }
+
 }
 
 
 fn main() {
     println!("Happy hacking!");
+    let test = DotfileCompare::new(
+        "~/Documents/dotfiles/.config/nvim/init.vim".to_string(),
+        "~/.config/nvim/init.vim".to_string()
+    );
+    test.print();
 }
