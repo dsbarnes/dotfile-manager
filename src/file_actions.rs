@@ -1,18 +1,18 @@
-pub mod dot_manager{
+pub mod actions{
 
     use difference::Changeset;
     use std::path::Path;
     use std::fs;
 
-    pub struct DotManager {
+    pub struct FileStore {
         pub base_path: String,
         pub backup_path: String,
     }
 
 
-    impl DotManager {
+    impl FileStore {
         pub fn new(base_path: String, backup_path: String) -> Self {
-            DotManager{
+            FileStore {
                 base_path,
                 backup_path,
             }

@@ -1,53 +1,46 @@
+mod file_actions;
+// mod git_actions;
+use file_actions::actions::FileStore;
+
 /*
- * Get the file from it's normal location
- * Compare that file to the one in the git repo
- * if different move the contents of the normal location into the git repo
- * else continue
- * for each of the files I want to check
+ * I pretty well only care about the settings in DOTFILES
  * 
- * git commit
- * push a git branch called dotfile-update-{timestamp}
- * 
+ * One:
+ *      Compare the backup file, to the base file
+ *          if they are the same continue,
+ *          else cp the base file contents to the backup file
+ *      Once all comparisons are made
+ *          create a new git branch and push it
+ *          make MR
+ *
  */
-mod dot_manage;
-mod git_actions;
-// Get better at naming things
-use dot_manage::dot_manager::DotManager;
 
-// Take in arguments,
-// add them to the array like this
-// ideally, look through whole folders
+const DOTFILES: [(&str, &str); 4] = [
+    ("~/Documents/dotfiles/.config/nvim/init.vim",
+     "~/.config/nvim/init.vim"),
 
-// const DOTFILES: [(&str, &str); 3] = [
-//     ("~/Documents/dotfiles/.config/nvim/init.vim",
-//      "~/.config/nvim/init.vim"),
-// 
-//     ("~/Documents/dotfiles/.bash-git-prompt/theme/DSBarnes.bgptheme",
-//      "/usr/local/opt/bash-git-prompt/share/themes/DSBarnes.bgptheme"),
-// 
-//     ("~/Documents/dotfiles/.bashrc",
-//      "~/.bashrc"),
-// ];
+    ("~/Documents/dotfiles/.bash-git-prompt/theme/DSBarnes.bgptheme",
+     "/usr/local/opt/bash-git-prompt/share/themes/DSBarnes.bgptheme"),
+
+    ("~/Documents/dotfiles/.bashrc",
+     "~/.bashrc"),
+
+    ("~/Documents/dotfiles/.bash_profile",
+     "~/.bash_profile"),
+];
 
 fn main() {
-    let same = DotManager::new(
-        DOTFILES[1].0.to_string(),
-        DOTFILES[1].1.to_string()
-    );
+    for file in DOTFILES.iter() {
+        let fs = FileStore::new(
+            file.0.to_string(),
+            file.1.to_string()
+        );
+        if !fs.compare_files() {
+            // Copy the base -> backup
+            // pull master, new branch, commit, pr
+            println!("Copy dat baayssssss");
+        }
+    }
+    println!("Happy Hacking");
 
-    let different = DotManager::new(
-        DOTFILES[2].0.to_string(),
-        DOTFILES[2].1.to_string()
-    );
-
-    same.print();
-    different.print();
-    // use shellexpand::tilde;
-    // use shellexpand::tilde;
-
-    let a = same.compare_files();
-    println!("{}", a);
-
-    let b = different.compare_files();
-    println!("{}", b);
 }
