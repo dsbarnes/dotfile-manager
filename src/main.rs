@@ -1,8 +1,3 @@
-use difference::{Difference, Changeset};
-use std::fs;
-use shellexpand::tilde;
-use std::path::Path;
-
 /*
  * Get the file from it's normal location
  * Compare that file to the one in the git repo
@@ -14,63 +9,45 @@ use std::path::Path;
  * push a git branch called dotfile-update-{timestamp}
  * 
  */
-const DOTFILES: [(&str, &str); 3] = [
-    ("~/Documents/dotfiles/.config/nvim/init.vim",
-     "~/.config/nvim/init.vim"),
+mod dot_manage;
+mod git_actions;
+// Get better at naming things
+use dot_manage::dot_manager::DotManager;
 
-    ("~/Documents/dotfiles/.bash-git-prompt/theme/DSBarnes.bgptheme",
-     "/usr/local/opt/bash-git-prompt/share/themes"),
+// Take in arguments,
+// add them to the array like this
+// ideally, look through whole folders
 
-    ("~/Documents/dotfiles/.bashrc",
-     "~/.bashrc"),
-];
-
-struct DotfileCompare {
-    base_path: String,
-    backup_path: String,
- }
-
-impl DotfileCompare {
-    pub fn new(p1: String, p2: String) -> Self {
-        DotfileCompare{
-            base_path: p1,
-            backup_path: p2,
-        }
-    }
-
-    pub fn print(&self){
-        println!("Base: {}", self.base_path);
-        println!("Backup: {}", self.backup_path);
-    }
-
-
-    pub fn config_string(&self, input: &String) -> String{
-        let init = shellexpand::tilde(&input);
-        let path = Path::new(init.as_ref());
-        fs::read_to_string(path).unwrap()
-    }
-
-
-    pub fn compare_files(&self) -> bool {
-        let base_config = self.config_string(&self.base_path);
-        let backup_config = self.config_string(&self.backup_path);
-        let change = Changeset::new(&base_config, &backup_config, "\n");
-
-        if change.diffs.len() > 1 {
-            println!("The files are not the same");
-            return false
-        }
-        true
-    }
-
-}
-
+// const DOTFILES: [(&str, &str); 3] = [
+//     ("~/Documents/dotfiles/.config/nvim/init.vim",
+//      "~/.config/nvim/init.vim"),
+// 
+//     ("~/Documents/dotfiles/.bash-git-prompt/theme/DSBarnes.bgptheme",
+//      "/usr/local/opt/bash-git-prompt/share/themes/DSBarnes.bgptheme"),
+// 
+//     ("~/Documents/dotfiles/.bashrc",
+//      "~/.bashrc"),
+// ];
 
 fn main() {
-    println!("Happy hacking!");
-    let test = DotfileCompare::new(
-        "~/Documents/dotfiles/.config/nvim/init.vim".to_string(),
-        "~/.config/nvim/init.vim".to_string()
+    let same = DotManager::new(
+        DOTFILES[1].0.to_string(),
+        DOTFILES[1].1.to_string()
     );
-    test.print();
+
+    let different = DotManager::new(
+        DOTFILES[2].0.to_string(),
+        DOTFILES[2].1.to_string()
+    );
+
+    same.print();
+    different.print();
+    // use shellexpand::tilde;
+    // use shellexpand::tilde;
+
+    let a = same.compare_files();
+    println!("{}", a);
+
+    let b = different.compare_files();
+    println!("{}", b);
 }
