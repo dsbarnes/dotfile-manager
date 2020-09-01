@@ -1,10 +1,18 @@
 mod git_action{
-    struct GitAction {}
+    use std::env;
+    use git2::{ Repository, Commit, ObjectType };
+
+    struct GitAction {
+        repo: String,
+    }
 
     impl GitAction {
         pub fn new(){}
+       
         pub fn add(){}
-        pub fn branch(){}
+
         pub fn commit(){}
+
+        pub fn branch(){}
     }
 }
