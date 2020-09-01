@@ -37,15 +37,15 @@ pub mod actions{
             let change = Changeset::new(&base_config, &backup_config, "\n");
 
             if change.diffs.len() > 1 {
-                println!("{:?}", change.diffs);
+                println!("Copying {} -> {}", &self.base_path, &self.backup_path);
                 return false
             }
             true
         }
 
         pub fn write_backup(&self){
-            // Move copy the base file,
-            // write it to the backup file
+            fs::copy(&self.base_path, &self.backup_path)
+                .expect("failed to copy");
         }
     }
 }

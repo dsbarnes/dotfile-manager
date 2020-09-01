@@ -35,10 +35,14 @@ fn main() {
             file.0.to_string(),
             file.1.to_string()
         );
+
+        fs.print();
+
         if !fs.compare_files() {
             // Copy the base -> backup
+            fs.write_backup();
             // pull master, new branch, commit, pr
-            println!("Copy dat baayssssss");
+            println!("do git stuff now");
         }
     }
     println!("Happy Hacking");
