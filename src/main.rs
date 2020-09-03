@@ -21,8 +21,14 @@ const DOTFILES: [(&str, &str); 4] = [
 ];
 
 fn find_last_commit(repo: &Repository) -> Result<Commit, git2::Error> {
-    let obj = repo.head()?.resolve()?.peel(ObjectType::Commit)?;
-    obj.into_commit().map_err(|_| git2::Error::from_str("Couldn't find commit"))
+    let obj = repo
+         .head()?
+         .resolve()?
+         .peel(ObjectType::Commit)?;
+
+    obj
+        .into_commit()
+        .map_err(|_| git2::Error::from_str("Couldn't find commit"))
 }
 
 fn display_commit(commit: &Commit) {
@@ -33,28 +39,32 @@ fn display_commit(commit: &Commit) {
 }
 
 fn main() {
-    // let repo = Repository::open(".").unwrap();
-    // let lc = find_last_commit(&repo).unwrap();
-    // display_commit(&lc);
 
-    for file in DOTFILES.iter() {
-        let fs = FileStore::new(
-            file.1.to_string(),
-            file.0.to_string()
-        );
+    let repo_path = "/Users/dsbarnes/Documents/dotfiles";
+    let repo = Repository::open(repo_path).unwrap();
+    let lc = find_last_commit(&repo).unwrap();
+    display_commit(&lc);
 
-        fs.print();
-        println!("");
+    let mut are_changes = false;
 
-        // if the files are not the same:
-        if !fs.compare_files() {
-            println!("writing {} to {}", file.1, file.0);
-            fs.write_backup();
-            
-            // pull master, new branch, commit, pr
-            println!("do git stuff now");
-        } else {
-            println!("The files are the same");
-        }
-    }
+    // for file in DOTFILES.iter() {
+    //     let fs = FileStore::new(
+    //         file.1.to_string(),
+    //         file.0.to_string()
+    //     );
+
+    //     if !fs.compare_files() {
+    //         are_changes = true;
+    //         println!("Updates, writing changes:");
+    //         fs.print();
+    //         fs.write_backup();
+    //     } else {
+    //         println!("Files are the same:");
+    //         fs.print();
+    //     }
+
+    //     if are_changes {
+    //         println!("Do git stuff")
+    //     }
+    // }
 }

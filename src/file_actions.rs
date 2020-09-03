@@ -44,6 +44,9 @@ pub mod actions{
         pub fn write_backup(&self){
             fs::copy(&self.base_path, &self.backup_path)
                 .expect("WRITE_BACKUP: failed to copy");
+
+            println!("Successfully copied {} to {}",
+                &self.base_path, &self.backup_path);
         }
     }
 }
