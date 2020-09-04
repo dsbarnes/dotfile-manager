@@ -3,13 +3,12 @@ pub mod actions{
         Oid, Signature, Commit,
         ObjectType, Repository, Direction, Branch,
     };
-    use std::path::Path;
-
 
     // Open an already existing repo
     pub fn git_open(path: &str) -> Result<Repository, git2::Error> {
         git2::Repository::open(&path)
     }
+
 
     // Need the parent commit to make a new commit
     pub fn find_last_commit(repo: &Repository) -> Result<Commit, git2::Error> {
@@ -22,14 +21,14 @@ pub mod actions{
             .map_err(|_| git2::Error::from_str("Couldn't find commit"))
     }
 
-    fn create_branch<'a> (
+    fn create_branch<'a>(
         repo: &'a Repository,
         branch_name: &str,
         target: &Commit,
         force: bool) ->
-        Result<Branch, git2::Error> {
+        Result<Branch<'a>, git2::Error> {
 
-        repo.branch(branch_name, target, force)
+        repo.branch(&branch_name, &target, force)
     }
 
     pub fn git_add(repo: &Repository, path: &Path) ->
@@ -41,11 +40,16 @@ pub mod actions{
     }
     
 
-    pub fn git_commit(repo: &Repository){
+    pub fn git_commit(repo: &Repository, oid: Oid, message: &str){
         let signature = Signature::now(
-            "Derek Barnes", "derekb0147@gmail.com")?;
-        let parent_commit = find_last_commit(&repo);
-        let tree = repo.find_tree(oid);
+            "Derek Barnes", "derekb0147@gmail.com")
+            .unwrap();
+
+        let parent_commit = find_last_commit(&repo)
+            .unwrap();
+
+        let tree = repo.find_tree(oid)
+            .unwrap();
 
         repo.commit(
             Some("HEAD"),
@@ -53,37 +57,22 @@ pub mod actions{
             &signature,
             message,
             &tree,
-            &parent_commit
-            );
-    }
-
-
-    pub fn add_and_commit(repo: &Repository, path: &Path, message: &str) ->
-        Result<Oid, git2::Error> {
-
-        let mut index = repo.index()?;
-        index.add_path(path)?;
-        let oid = index.write_tree()?;
-        let signature = Signature::now(
-            "Zbigniew Siciarz", "zbigniew@siciarz.net")?;
-        let parent_commit = find_last_commit(&repo)?;
-        let tree = repo.find_tree(oid)?;
-        repo.commit(Some("HEAD"), //  point HEAD to our new commit
-                    &signature, // author
-                    &signature, // committer
-                    message, // commit message
-                    &tree, // tree
-                    &[&parent_commit]) // parents
+            &[&parent_commit]
+        );
     }
 
 
     // Needs the branch name
-    pub fn git_push(repo: &Repository, url: &str) -> Result<(), git2::Error> {
+    pub fn git_push(repo: &Repository, url: &str) ->
+        Result<(), git2::Error> {
+
         let mut remote = match repo.find_remote("origin") {
             Ok(r) => r,
             Err(_) => repo.remote("origin", url)?,
         };
+
         remote.connect(Direction::Push)?;
+        // take branch name here, don't always push to master
         remote.push(&["refs/heads/master:refs/heads/master"], None)
     }
 }
