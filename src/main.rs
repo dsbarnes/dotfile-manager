@@ -1,10 +1,10 @@
 mod file_actions;
-// mod git_actions;
+mod git_actions;
+
 use file_actions::actions::FileStore;
-use std::env;
-use std::path::Path;
-use git2::{ Repository, Commit, ObjectType, Oid };
-// use std::time;
+use git_actions::actions::{
+    find_last_commit, git_add, git_commit, git_push};
+
 
 const DOTFILES: [(&str, &str); 4] = [
     ("~/Documents/dotfiles/.config/nvim/init.vim",
@@ -20,31 +20,8 @@ const DOTFILES: [(&str, &str); 4] = [
      "~/.bash_profile"),
 ];
 
-fn find_last_commit(repo: &Repository) -> Result<Commit, git2::Error> {
-    let obj = repo
-         .head()?
-         .resolve()?
-         .peel(ObjectType::Commit)?;
-
-    obj
-        .into_commit()
-        .map_err(|_| git2::Error::from_str("Couldn't find commit"))
-}
-
-fn display_commit(commit: &Commit) {
-    println!("commit {}\nAuthor: {}\n\n    {}",
-             commit.id(),
-             commit.author(),
-             commit.message().unwrap_or("no commit message"));
-}
 
 fn main() {
-
-    let repo_path = "/Users/dsbarnes/Documents/dotfiles";
-    let repo = Repository::open(repo_path).unwrap();
-    let lc = find_last_commit(&repo).unwrap();
-    display_commit(&lc);
-
     let mut are_changes = false;
 
     // for file in DOTFILES.iter() {
