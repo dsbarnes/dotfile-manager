@@ -1,5 +1,5 @@
 pub mod actions{
-    use path::Path;
+    use std::path::Path;
     use git2::{
         Oid, Signature, Commit,
         ObjectType, Repository, Direction, Branch,

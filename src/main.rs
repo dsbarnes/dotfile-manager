@@ -3,8 +3,9 @@ mod git_actions;
 
 use file_actions::actions::FileStore;
 use git_actions::actions::{
-    find_last_commit, git_add, git_commit, git_push};
+    git_open, find_last_commit, git_add, git_commit, git_push};
 
+use std::path::Path;
 
 const DOTFILES: [(&str, &str); 4] = [
     ("~/Documents/dotfiles/.config/nvim/init.vim",
@@ -22,26 +23,33 @@ const DOTFILES: [(&str, &str); 4] = [
 
 
 fn main() {
-    let mut are_changes = false;
+    let repo_path = "/Users/dsbarnes/Documents/dotfiles";
+    let repo = git_open(repo_path).unwrap();
+    let mut were_changes = false;
+    let mut oid;
 
     for file in DOTFILES.iter() {
         let fs = FileStore::new(
-            file.1.to_string(),
-            file.0.to_string()
+            file.1.to_string(), // Base_path
+            file.0.to_string(), // Backup_path
         );
 
         if !fs.compare_files() {
-            are_changes = true;
-            println!("Updates, writing changes:");
+            if !were_changes { were_changes = true };
+            println!("Updates, writing changes and staging file:");
             fs.print();
             fs.write_backup();
+            let path = Path::new(&fs.backup_path);
+            oid = git_add(&repo, &path).unwrap();
         } else {
             println!("Files are the same:");
             fs.print();
         }
 
-        if are_changes {
-            println!("Do git stuff")
-        }
+    }
+    if were_changes {
+        println!("Doing git stuff");
+        // git_commit(&repo, oid, "Auto commit from dotfile manager");
+        // git_push(&repo, "url", "branch");
     }
 }
