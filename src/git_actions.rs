@@ -1,4 +1,5 @@
 pub mod actions{
+    use path::Path;
     use git2::{
         Oid, Signature, Commit,
         ObjectType, Repository, Direction, Branch,
@@ -25,14 +26,14 @@ pub mod actions{
         repo: &'a Repository,
         branch_name: &str,
         target: &Commit,
-        force: bool) ->
-        Result<Branch<'a>, git2::Error> {
+        force: bool
+    ) -> Result<Branch<'a>, git2::Error> {
 
         repo.branch(&branch_name, &target, force)
     }
 
-    pub fn git_add(repo: &Repository, path: &Path) ->
-        Result<Oid, git2::Error>{
+    pub fn git_add(repo: &Repository, path: &Path
+    ) -> Result<Oid, git2::Error>{
 
         let mut index = repo.index()?;
         index.add_path(path);
@@ -62,17 +63,17 @@ pub mod actions{
     }
 
 
-    // Needs the branch name
-    pub fn git_push(repo: &Repository, url: &str) ->
-        Result<(), git2::Error> {
+    pub fn git_push(repo: &Repository, url: &str, branch_name: &str
+    ) -> Result<(), git2::Error> {
 
         let mut remote = match repo.find_remote("origin") {
             Ok(r) => r,
             Err(_) => repo.remote("origin", url)?,
         };
-
         remote.connect(Direction::Push)?;
-        // take branch name here, don't always push to master
-        remote.push(&["refs/heads/master:refs/heads/master"], None)
+        let refspec = format!("refs/heads/{}:refs/heads/{}",
+                               branch_name, branch_name);
+
+        remote.push(&[refspec], None)
     }
 }
